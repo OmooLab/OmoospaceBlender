@@ -1,0 +1,66 @@
+name: Upload Assets to Release
+
+on:
+  push:
+    tags:
+      # Publish on any tag starting with a `v`, e.g., v0.1.0
+      - v*
+
+jobs:
+  draft_release:
+    name: Draft Release
+    permissions:
+      contents: write
+      pull-requests: write
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.draft_release.outputs.upload_url }}
+      version: ${{ steps.set_env.outputs.version }}
+    steps:
+      - name: Set Version Env
+        id: set_env
+        run: |
+          ref_name=${{ github.ref_name }}
+          echo "version=${ref_name#release/}" >> "$GITHUB_OUTPUT"
+      - name: Draft Release ${{ steps.set_env.outputs.version }}
+        uses: release-drafter/release-drafter@v5
+        id: draft_release
+        with:
+          name: ${{ steps.set_env.outputs.version }}
+          tag: ${{ steps.set_env.outputs.version }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build_extension:
+    name: Build Blender Extension
+    needs: draft_release
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        platform: ["windows-x64", "linux-x64", "macos-arm64", "macos-x64"]
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          lfs: "true"
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+      - name: Install Dependencies
+        run: |
+          uv python install 3.10
+          uv sync
+      - name: Build Extension
+        run: | # build.py need tomlkit to edit blender_manifest.toml
+          uv run build.py ${{ matrix.platform }}
+          cd src/omoospaceblender
+          zip -r ../../package.zip .
+      - name: Upload Extension
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.draft_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+          asset_path: ./package.zip
+          asset_name: OmoospaceForBlender.${{ needs.draft_release.outputs.version }}.${{ matrix.platform }}.zip
+          asset_content_type: application/zip
