@@ -1,0 +1,2 @@
+# Omoospace Blender Extension
+Omoospace Blender Extension is an add-on for Blender that integrates Omoospace way's manage project files into the Blender, enhancing the workflow for 3D artists and developers. [What is Omoospace?](https://omoolab.github.io/Omoospace/latest/)

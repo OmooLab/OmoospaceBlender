@@ -24,6 +24,8 @@ class CreateOmoospace(bpy.types.Operator):
         name="Subspaces/", default="Subspaces"
     )  # type: ignore
 
+    readme: bpy.props.BoolProperty(name="Add Readme", default=True)  # type: ignore
+
     def invoke(self, context, event):
         preferences = context.preferences.addons[__package__].preferences
         self.under = preferences.omoospace_home
@@ -50,6 +52,7 @@ class CreateOmoospace(bpy.types.Operator):
                 under=self.under,
                 contents_dir=self.contents_dir,
                 subspaces_dir=self.subspaces_dir,
+                readme=self.readme,
                 reveal_in_explorer=True,
             )
         except FileExistsError:
@@ -100,6 +103,7 @@ class CreateOmoospace(bpy.types.Operator):
         layout.prop(self, "subspace_name")
         layout.prop(self, "contents_dir")
         layout.prop(self, "subspaces_dir")
+        layout.prop(self, "readme")
 
 
 class CopyToClipboard(bpy.types.Operator):
