@@ -87,6 +87,59 @@ video_format = (
 )
 
 
+def change_path(parm: str, bpath: str):
+    type = parm.split("/")[0]
+    name = parm.split("/")[1]
+    extra = parm.split("/")[2] if len(parm.split("/")) > 2 else None
+
+    if type == "image":
+        bpy.data.images[name].filepath = bpath
+    elif type == "sound":
+        bpy.data.sounds[name].filepath = bpath
+    elif type == "volume":
+        bpy.data.volumes[name].filepath = bpath
+    elif type == "cache_file":
+        bpy.data.cache_files[name].filepath = bpath
+    elif type == "library":
+        bpy.data.libraries[name].filepath = bpath
+    elif type == "strip_image":
+        bpy.data.scenes[name].sequence_editor.strips_all[extra].directory = bpath
+    elif type == "strip_movie":
+        bpy.data.scenes[name].sequence_editor.strips_all[extra].filepath = bpath
+    elif type == "render":
+        bpy.data.scenes[name].render.filepath = bpath
+    elif type == "modifier_bake":
+        bpy.data.objects[name].modifiers[extra].bake_directory
+
+
+def pack(parm: str):
+    type = parm.split("/")[0]
+    name = parm.split("/")[1]
+
+    if type == "image":
+        bpy.data.images[name].pack()
+    elif type == "sound":
+        bpy.data.sounds[name].pack()
+    elif type == "volume":
+        bpy.data.volumes[name].pack()
+    elif type == "library":
+        bpy.data.libraries[name].pack()
+
+
+def unpack(parm: str):
+    type = parm.split("/")[0]
+    name = parm.split("/")[1]
+
+    if type == "image":
+        bpy.data.images[name].unpack()
+    elif type == "sound":
+        bpy.data.sounds[name].unpack()
+    elif type == "volume":
+        bpy.data.volumes[name].unpack()
+    elif type == "library":
+        bpy.data.libraries[name].unpack()
+
+
 def collect_input_paths():
     input_path_dict = {}
 
@@ -95,7 +148,7 @@ def collect_input_paths():
         if not image.filepath:
             continue
 
-        parm = f"bpy.data.images['{image.name}'].filepath"
+        parm = f"image/{image.name}"
         input_path_dict[parm] = {
             "label": image.name,
             "path": image.filepath,
@@ -109,7 +162,7 @@ def collect_input_paths():
         if not sound.filepath:
             continue
 
-        parm = f"bpy.data.sounds['{sound.name}'].filepath"
+        parm = f"sound/{sound.name}"
         input_path_dict[parm] = {
             "label": sound.name,
             "path": sound.filepath,
@@ -123,7 +176,7 @@ def collect_input_paths():
         if not volume.filepath:
             continue
 
-        parm = f"bpy.data.volumes['{volume.name}'].filepath"
+        parm = f"volume/{volume.name}"
         input_path_dict[parm] = {
             "label": volume.name,
             "path": volume.filepath,
@@ -137,7 +190,7 @@ def collect_input_paths():
         if not cache_file.filepath:
             continue
 
-        parm = f"bpy.data.cache_files['{cache_file.name}'].filepath"
+        parm = f"cache_file/{cache_file.name}"
         input_path_dict[parm] = {
             "label": cache_file.name,
             "path": cache_file.filepath,
@@ -156,7 +209,7 @@ def collect_input_paths():
         ):
             continue
 
-        parm = f"bpy.data.libraries['{library.name}'].filepath"
+        parm = f"library/{library.name}"
         input_path_dict[parm] = {
             "label": library.name,
             "path": library.filepath,
@@ -177,11 +230,11 @@ def collect_input_paths():
             if strip.type == "IMAGE":
                 category = "Images"
                 path = strip.directory
-                parm = f"bpy.data.scenes['{scene.name}'].sequence_editor.strips_all['{strip.name}'].directory"
+                parm = f"strip_image/{scene.name}/{strip.name}"
             elif strip.type == "MOVIE":
                 category = "Videos"
                 path = strip.filepath
-                parm = f"bpy.data.scenes['{scene.name}'].sequence_editor.strips_all['{strip.name}'].filepath"
+                parm = f"strip_movie/{scene.name}/{strip.name}"
 
             if not parm:
                 continue
@@ -201,7 +254,7 @@ def collect_input_paths():
 def collect_output_paths():
     output_paths = {}
     for scene in bpy.data.scenes:
-        parm = f"bpy.data.scenes['{scene.name}'].render.filepath"
+        parm = f"render/{scene.name}"
         not_video = scene.render.image_settings.file_format not in [
             "AVI_JPEG",
             "AVI_RAW",
@@ -222,7 +275,7 @@ def collect_output_paths():
             if get_type(modifier) == "NodesModifier" and hasattr(
                 modifier, "bake_directory"
             ):
-                parm = f"bpy.data.objects['{obj.name}'].modifiers['{modifier.name}'].bake_directory"
+                parm = f"modifier_bake/{obj.name}/{modifier.name}"
                 output_paths[parm] = {
                     "label": f"{obj.name} {modifier.name}",
                     "path": modifier.bake_directory,
@@ -263,54 +316,46 @@ class OMOOSPACE_UL_InputPathList(bpy.types.UIList):
 
         label = f"{input_path.users} {input_path.label}"
 
-        if self.layout_type in {"DEFAULT", "COMPACT"}:
-            row = layout.split(factor=0.02)
-            row.prop(input_path, "selected", text="")
-            row = row.split(factor=0.2)
-            row.label(text=label, icon=input_path.icon)
-            row = row.split(factor=0.1)
-            row.prop(input_path, "category", text="")
-            row = row.split(factor=0.04)
+        row = layout.split(factor=0.02)
+        row.prop(input_path, "selected", text="")
+        row = row.split(factor=0.2)
+        row.label(text=label, icon=input_path.icon)
+        row = row.split(factor=0.1)
+        row.prop(input_path, "category", text="")
+        row = row.split(factor=0.04)
 
+        row.prop(
+            input_path,
+            "include_pathname",
+            text="",
+            icon="EVENT_S",
+            toggle=True,
+        )
+        row = row.split(factor=0.15)
+        row.prop(input_path, "folder", text="")
+
+        row = row.split(factor=0.05)
+        if not input_path.is_packed:
             row.prop(
                 input_path,
-                "include_pathname",
+                "include_folder",
                 text="",
-                icon="EVENT_S",
+                icon="FILE_FOLDER",
                 toggle=True,
             )
-            row = row.split(factor=0.15)
-            row.prop(input_path, "folder", text="")
-
-            row = row.split(factor=0.05)
-            if not input_path.is_packed:
-                row.prop(
-                    input_path,
-                    "include_folder",
-                    text="",
-                    icon="FILE_FOLDER",
-                    toggle=True,
-                )
-            else:
-                row.label(
-                    text="",
-                    icon="FILE_FOLDER",
-                )
-            row = row.split(factor=1)
-            op = row.operator(
-                RevealPath.bl_idname,
-                text=path_str,
-                depress=input_path.selected,
-                icon="PACKAGE" if input_path.is_packed else "UGLYPACKAGE",
+        else:
+            row.label(
+                text="",
+                icon="FILE_FOLDER",
             )
-            op.path = path_str
-            # row.label(
-            #     text=path_str,
-            #     icon="PACKAGE" if input_path.is_packed else "UGLYPACKAGE",
-            # )
-
-        elif self.layout_type == "GRID":
-            ...
+        row = row.split(factor=1)
+        op = row.operator(
+            RevealPath.bl_idname,
+            text=path_str,
+            depress=input_path.selected,
+            icon="PACKAGE" if input_path.is_packed else "UGLYPACKAGE",
+        )
+        op.path = path_str
 
     def draw_filter(self, context, layout):
         layout.prop(self, "invaild_only")
@@ -395,7 +440,7 @@ class ManageInputPaths(bpy.types.Operator):
             # TODO: 需要更好的方案去解决打包的文件，目前只实现了图片类的问题，而且处理的不好
             try:
                 if is_packed:
-                    exec(f"{parm.removesuffix('.filepath')}.unpack()")
+                    unpack(parm)
                     old_opath = bpath_to_opath(f"//textures/{old_opath.name}")
 
                 if include_folder:
@@ -403,15 +448,16 @@ class ManageInputPaths(bpy.types.Operator):
                 else:
                     copy_to(old_opath, new_opath.parent)
 
-                exec(f"{parm}=r'{new_bpath}'")
+                change_path(parm, new_bpath)
 
                 # repack to confirm filepath
                 if is_packed:
                     old_opath.remove()
-                    exec(f"{parm.removesuffix('.filepath')}.pack()")
+                    pack(parm)
 
                 self.report({"INFO"}, f"{old_bpath} -> {new_bpath}")
             except Exception as err:
+                raise err
                 print(err)
                 self.report({"WARNING"}, f"Fail to copy, skip '{parm}'.")
 
@@ -472,29 +518,25 @@ class OMOOSPACE_UL_OutputPathList(bpy.types.UIList):
         else:
             path_str = output_path.path
 
-        if self.layout_type in {"DEFAULT", "COMPACT"}:
-            row = layout.split(factor=0.02)
-            row.prop(output_path, "selected", text="")
-            row = row.split(factor=0.15)
-            row.label(text=output_path.label, icon=output_path.icon)
+        row = layout.split(factor=0.02)
+        row.prop(output_path, "selected", text="")
+        row = row.split(factor=0.15)
+        row.label(text=output_path.label, icon=output_path.icon)
 
-            row = row.split(factor=0.1)
-            row.prop(output_path, "category", text="")
-            row = row.split(factor=0.15)
-            row.prop(output_path, "name", text="")
-            row = row.split(factor=0.15)
-            row.prop(output_path, "suffix", text="")
-            row = row.split(factor=0.05)
-            row.prop(output_path, "in_folder", text="", icon="FILE_FOLDER", toggle=1)
+        row = row.split(factor=0.1)
+        row.prop(output_path, "category", text="")
+        row = row.split(factor=0.15)
+        row.prop(output_path, "name", text="")
+        row = row.split(factor=0.15)
+        row.prop(output_path, "suffix", text="")
+        row = row.split(factor=0.05)
+        row.prop(output_path, "in_folder", text="", icon="FILE_FOLDER", toggle=1)
 
-            row = row.split(factor=1)
-            op = row.operator(
-                RevealPath.bl_idname, text=path_str, depress=output_path.selected
-            )
-            op.path = path_str
-
-        elif self.layout_type == "GRID":
-            ...
+        row = row.split(factor=1)
+        op = row.operator(
+            RevealPath.bl_idname, text=path_str, depress=output_path.selected
+        )
+        op.path = path_str
 
     def draw_filter(self, context, layout):
         layout.prop(self, "invaild_only")
@@ -568,7 +610,7 @@ class ManageOutputPaths(bpy.types.Operator):
 
             new_bpath: str = opath_to_bpath(new_opath)
 
-            exec(f"{parm}=r'{new_bpath}'")
+            change_path(parm, new_bpath)
             self.report({"INFO"}, f"{old_bpath} -> {new_bpath}")
 
         return {"FINISHED"}
@@ -632,7 +674,7 @@ def correct_path_on_save_pre(blend_file: str):
         old_rel_bpath = str(old_opath.relative_to(old_contents_dir))
         new_bpath: str = f"{new_rel_contents_dir}/{old_rel_bpath}"
 
-        exec(f"{parm}=r'{new_bpath}'")
+        change_path(parm, new_bpath)
 
         old_path: OMOOSPACE_OldPath = wm.old_path_list.add()
         old_path.parm = parm
@@ -665,12 +707,12 @@ def correct_path_on_save_pre(blend_file: str):
         # if copy fail, skip change path
         try:
             if is_packed:
-                exec(f"{parm.removesuffix('.filepath')}.unpack()")
+                unpack(parm)
                 old_opath = bpath_to_opath(f"//textures/{old_opath.name}")
 
             copy_to(old_opath, new_opath.parent)
 
-            exec(f"{parm}=r'{new_bpath}'")
+            change_path(parm, new_bpath)
             print(f"{old_bpath} -> {new_bpath}")
 
             old_path: OMOOSPACE_OldPath = wm.old_path_list.add()
@@ -680,7 +722,7 @@ def correct_path_on_save_pre(blend_file: str):
             # repack to confirm filepath
             if is_packed:
                 old_opath.remove()
-                exec(f"{parm.removesuffix('.filepath')}.pack()")
+                pack(parm)
 
         except Exception as err:
             print(err)
@@ -701,7 +743,7 @@ def restore_path_on_save_post(blend_file: str):
     for path_item in wm.old_path_list:
         parm = path_item.parm
         old_bpath = path_item.path
-        exec(f"{parm}=r'{old_bpath}'")
+        change_path(parm, old_bpath)
 
 
 def correct_path_on_load_post():
@@ -722,7 +764,7 @@ def correct_path_on_load_post():
         if is_content(old_bpath) and not old_bpath.startswith("//"):
 
             new_bpath = bpy.path.relpath(old_bpath)
-            exec(f"{parm}=r'{new_bpath}'")
+            change_path(parm, new_bpath)
             print(f"{old_bpath} -> {new_bpath}")
             old_bpath = new_bpath
 
@@ -733,5 +775,5 @@ def correct_path_on_load_post():
         if old_bpath.startswith(old_rel_contents_dir):
 
             new_bpath = old_bpath.replace(old_rel_contents_dir, new_rel_contents_dir)
-            exec(f"{parm}=r'{new_bpath}'")
+            change_path(parm, new_bpath)
             print(f"{old_bpath} -> {new_bpath}")

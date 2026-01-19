@@ -11,10 +11,6 @@ from .utils import get_omoospace
 
 
 def update_quick_dirs():
-    omoospace = get_omoospace()
-    if not omoospace:
-        return
-    
     preferences = bpy.context.preferences.addons[__package__].preferences
     home = preferences.omoospace_home
 
@@ -24,6 +20,10 @@ def update_quick_dirs():
     quick_dir = quick_dirs.add()
     quick_dir.label = "Home"
     quick_dir.path = home
+
+    omoospace = get_omoospace()
+    if not omoospace:
+        return
 
     quick_dir = quick_dirs.add()
     quick_dir.label = "Omoospace"

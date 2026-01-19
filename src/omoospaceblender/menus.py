@@ -45,10 +45,6 @@ def TOPBAR(self, context):
 
 def FILE_BROWSER(self, context):
     layout = self.layout
-    omoospace = get_omoospace()
-    if not omoospace:
-        return
-
     quick_dir_list = bpy.context.window_manager.quick_dir_list
 
     layout.template_list(
@@ -59,7 +55,7 @@ def FILE_BROWSER(self, context):
         active_dataptr=quick_dir_list,
         active_propname="quick_dirs_active",
         item_dyntip_propname="path",
-        rows=3,
+        rows=len(quick_dir_list.quick_dirs),
     )
 
 
