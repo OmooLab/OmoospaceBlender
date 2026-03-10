@@ -395,6 +395,11 @@ class ManageInputPaths(bpy.types.Operator):
         name="Input Paths", options=set(), default=-1, update=update_input_paths
     )  # type: ignore
 
+    @classmethod
+    def poll(cls, context):
+        subspace_pathname = get_pathname()
+        return subspace_pathname is not None
+
     def invoke(self, context, event):
         for parm, item in collect_input_paths().items():
             input_path: OMOOSPACE_InputPath = self.input_paths.add()
@@ -575,6 +580,11 @@ class ManageOutputPaths(bpy.types.Operator):
     output_paths_active: bpy.props.IntProperty(
         name="Output Paths", options=set(), default=-1, update=update_output_paths
     )  # type: ignore
+
+    @classmethod
+    def poll(cls, context):
+        subspace_pathname = get_pathname()
+        return subspace_pathname is not None
 
     def invoke(self, context, event):
         for parm, item in collect_output_paths().items():

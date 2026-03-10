@@ -13,7 +13,7 @@ class Platform:
 
 
 required_packages = [
-    "omoospace==0.2.5",
+    "omoospace==0.2.6",
     "nutree==0.5.1",
     "pypinyin==0.49.0",
     "ruamel.yaml==0.17.40",
@@ -35,7 +35,7 @@ def run_python(args: str):
     subprocess.run([python] + args.split(" "))
 
 
-def build_extension(platform: Platform, python_version="3.11") -> None:
+def build_extension(platform: Platform, python_version: str) -> None:
     wheel_dirpath = Path("./src/omoospaceblender/wheels")
     toml_filepath = Path("./src/omoospaceblender/blender_manifest.toml")
 
@@ -73,8 +73,9 @@ def build_extension(platform: Platform, python_version="3.11") -> None:
 
 def main():
     platform_name = sys.argv[1]
+    python_version = sys.argv[2] or "3.11"
     platform = platforms[platform_name]
-    build_extension(platform)
+    build_extension(platform, python_version)
 
 
 if __name__ == "__main__":

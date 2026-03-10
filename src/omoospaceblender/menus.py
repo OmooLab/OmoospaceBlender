@@ -24,12 +24,15 @@ class OmoospaceMenu(bpy.types.Menu):
             op = layout.operator(RevealPath.bl_idname, text=f"╰─ Subspaces")
             op.path = str(omoospace.subspaces_dir)
 
-            op = layout.operator(
-                CopyToClipboard.bl_idname,
-                text=f"       ╰─ {subspace_pathname}",
-            )
-            op.text = subspace_pathname
-            
+            if subspace_pathname is None:
+                layout.label(text=f"*Not a subspace", icon="ERROR")
+            else:
+                op = layout.operator(
+                    CopyToClipboard.bl_idname,
+                    text=f"       ╰─ {subspace_pathname}",
+                )
+                op.text = subspace_pathname
+
             layout.separator()
             layout.operator(ManageInputPaths.bl_idname)
             layout.operator(ManageOutputPaths.bl_idname)

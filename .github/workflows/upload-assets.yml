@@ -52,7 +52,8 @@ jobs:
           uv sync
       - name: Build Extension
         run: | # build.py need tomlkit to edit blender_manifest.toml
-          uv run build.py ${{ matrix.platform }}
+          uv run build.py ${{ matrix.platform }} 3.11
+          uv run build.py ${{ matrix.platform }} 3.13
           cd src/omoospaceblender
           zip -r ../../package.zip .
       - name: Upload Extension
