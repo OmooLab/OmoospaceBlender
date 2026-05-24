@@ -13,7 +13,7 @@ class Platform:
 
 
 required_packages = [
-    "omoospace==0.2.6",
+    "omoospace==0.2.8",
     "nutree==0.5.1",
     "pypinyin==0.49.0",
     "ruamel.yaml==0.17.40",

@@ -19,9 +19,9 @@ class OmoospaceMenu(bpy.types.Menu):
 
             op = layout.operator(RevealPath.bl_idname, text=f"Omoospace")
             op.path = str(omoospace.root_dir)
-            op = layout.operator(RevealPath.bl_idname, text=f"├─ Contents")
+            op = layout.operator(RevealPath.bl_idname, text=f"├─ contents")
             op.path = str(omoospace.contents_dir)
-            op = layout.operator(RevealPath.bl_idname, text=f"╰─ Subspaces")
+            op = layout.operator(RevealPath.bl_idname, text=f"╰─ subspaces")
             op.path = str(omoospace.subspaces_dir)
 
             if subspace_pathname is None:

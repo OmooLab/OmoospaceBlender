@@ -32,12 +32,12 @@ def update_quick_dirs():
     # Only add if the directory exists
     if omoospace.contents_dir.exists():
         quick_dir = quick_dirs.add()
-        quick_dir.label = "├─ Contents"
+        quick_dir.label = "├─ contents"
         quick_dir.path = str(omoospace.contents_dir)
 
     if omoospace.contents_dir.exists():
         quick_dir = quick_dirs.add()
-        quick_dir.label = "╰─ Subspaces"
+        quick_dir.label = "╰─ subspaces"
         quick_dir.path = str(omoospace.subspaces_dir)
 
 

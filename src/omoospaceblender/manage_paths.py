@@ -18,21 +18,21 @@ from .props import OMOOSPACE_InputPath, OMOOSPACE_OutputPath, OMOOSPACE_OldPath
 from omoospace import normalize_name, Opath, Omoospace
 
 CATEGORY_ICON = {
-    "Images": "IMAGE_DATA",
-    "Volumes": "VOLUME_DATA",
-    "Dynamics": "FORCE_WIND",
-    "Libraries": "LIBRARY_DATA_DIRECT",
-    "Misc": "FILE",
-    "Renders": "OUTPUT",
-    "Videos": "FILE_MOVIE",
-    "Audios": "FILE_SOUND",
-    "GeometryNodes": "NODETREE",
+    "images": "IMAGE_DATA",
+    "volumes": "VOLUME_DATA",
+    "dynamics": "FORCE_WIND",
+    "libraries": "LIBRARY_DATA_DIRECT",
+    "misc": "FILE",
+    "renders": "OUTPUT",
+    "videos": "FILE_MOVIE",
+    "audios": "FILE_SOUND",
+    "geonodes": "NODETREE",
 }
 
 
 def correct_input_path(
     input_path: Opath,
-    category="Misc",
+    category="misc",
     folder="",
     include_folder=False,
     include_pathname=False,
@@ -58,7 +58,7 @@ def correct_input_path(
     return new_path
 
 
-def correct_output_path(name, in_folder=False, category="Misc", suffix=""):
+def correct_output_path(name, in_folder=False, category="misc", suffix=""):
 
     omoospace = get_omoospace()
     pathname = get_pathname()
@@ -153,7 +153,7 @@ def collect_input_paths():
             "label": image.name,
             "path": image.filepath,
             "users": image.users,
-            "category": "Videos" if image.filepath.endswith(video_format) else "Images",
+            "category": "videos" if image.filepath.endswith(video_format) else "images",
             "is_sequence": is_sequence(image.filepath),
             "is_packed": bool(image.packed_file),
         }
@@ -167,7 +167,7 @@ def collect_input_paths():
             "label": sound.name,
             "path": sound.filepath,
             "users": sound.users,
-            "category": "Videos" if sound.filepath.endswith(video_format) else "Audios",
+            "category": "videos" if sound.filepath.endswith(video_format) else "audios",
             "is_sequence": False,
             "is_packed": bool(sound.packed_file),
         }
@@ -181,7 +181,7 @@ def collect_input_paths():
             "label": volume.name,
             "path": volume.filepath,
             "users": volume.users,
-            "category": "Volumes",
+            "category": "volumes",
             "is_sequence": volume.is_sequence,
             "is_packed": bool(volume.packed_file),
         }
@@ -195,7 +195,7 @@ def collect_input_paths():
             "label": cache_file.name,
             "path": cache_file.filepath,
             "users": cache_file.users,
-            "category": "Dynamics",
+            "category": "dynamics",
             "is_sequence": is_sequence(cache_file.filepath),
             "is_packed": False,
         }
@@ -214,7 +214,7 @@ def collect_input_paths():
             "label": library.name,
             "path": library.filepath,
             "users": library.users,
-            "category": "Libraries",
+            "category": "libraries",
             "is_sequence": False,
             "is_packed": bool(library.packed_file),
         }
@@ -228,11 +228,11 @@ def collect_input_paths():
             path = None
 
             if strip.type == "IMAGE":
-                category = "Images"
+                category = "images"
                 path = strip.directory
                 parm = f"strip_image/{scene.name}/{strip.name}"
             elif strip.type == "MOVIE":
-                category = "Videos"
+                category = "videos"
                 path = strip.filepath
                 parm = f"strip_movie/{scene.name}/{strip.name}"
 
@@ -264,7 +264,7 @@ def collect_output_paths():
         output_paths[parm] = {
             "label": f"{scene.name}",
             "path": scene.render.filepath,
-            "category": "Renders",
+            "category": "renders",
             "name": normalize_name(scene.name),
             "suffix": "####" if not_video else "",
             "in_folder": not_video,
@@ -279,7 +279,7 @@ def collect_output_paths():
                 output_paths[parm] = {
                     "label": f"{obj.name} {modifier.name}",
                     "path": modifier.bake_directory,
-                    "category": "GeometryNodes",
+                    "category": "geo-nodes",
                     "name": normalize_name(modifier.name),
                     "suffix": "",
                     "in_folder": False,

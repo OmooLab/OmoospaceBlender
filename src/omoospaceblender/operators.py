@@ -12,19 +12,19 @@ class CreateOmoospace(bpy.types.Operator):
     bl_options = {"UNDO"}
 
     under: bpy.props.StringProperty(
-        name="Under", subtype="DIR_PATH", default=str(Path.home())
+        name="Home", subtype="DIR_PATH", default=str(Path.home())
     )  # type: ignore
 
-    omoospace_name: bpy.props.StringProperty(name="Name")  # type: ignore
-    subspace_name: bpy.props.StringProperty(name="Subspace")  # type: ignore
+    dirname: bpy.props.StringProperty(name="Name")  # type: ignore
+    name: bpy.props.StringProperty(name="Name")  # type: ignore
+    description: bpy.props.StringProperty(name="Description")  # type: ignore
+    subspace_name: bpy.props.StringProperty(name="File Name")  # type: ignore
     contents_dir: bpy.props.StringProperty(
-        name="Contents/", default="Contents"
+        name="contents/", default="contents"
     )  # type: ignore
     subspaces_dir: bpy.props.StringProperty(
-        name="Subspaces/", default="Subspaces"
+        name="subspaces/", default="subspaces"
     )  # type: ignore
-
-    readme: bpy.props.BoolProperty(name="Add Readme", default=True)  # type: ignore
 
     def invoke(self, context, event):
         preferences = context.preferences.addons[__package__].preferences
@@ -34,25 +34,20 @@ class CreateOmoospace(bpy.types.Operator):
 
     def execute(self, context):
         file_name = bpy.path.basename(bpy.data.filepath) or "Untitled"
-        file_name = normalize_name(file_name)
+        dirname = self.dirname or file_name
 
-        try:
-            omoospace_name = normalize_name(self.omoospace_name)
-        except ValueError:
-            omoospace_name = file_name
+        omoospace_dir = Opath(self.under, dirname)
 
         try:
             subspace_name = normalize_name(self.subspace_name)
         except ValueError:
-            subspace_name = file_name if file_name != "Untitled" else omoospace_name
+            subspace_name = normalize_name(file_name)
 
         try:
             omoospace = create_omoospace(
-                name=omoospace_name,
-                under=self.under,
+                omoospace_dir,
                 contents_dir=self.contents_dir,
                 subspaces_dir=self.subspaces_dir,
-                readme=self.readme,
                 reveal_in_explorer=True,
             )
         except FileExistsError:
@@ -68,42 +63,38 @@ class CreateOmoospace(bpy.types.Operator):
 
     def draw(self, context):
         file_name = bpy.path.basename(bpy.data.filepath) or "Untitled"
-        file_name = normalize_name(file_name)
-
-        try:
-            omoospace_name = normalize_name(self.omoospace_name)
-        except ValueError:
-            omoospace_name = file_name
+        dirname = self.dirname or file_name
 
         try:
             subspace_name = normalize_name(self.subspace_name)
         except ValueError:
-            subspace_name = file_name if file_name != "Untitled" else omoospace_name
+            subspace_name = normalize_name(file_name)
 
-        root_dir = Opath(self.under, omoospace_name)
-        contents_dir = self.contents_dir or "Contents"
+        omoospace_dir = Opath(self.under, dirname)
+        contents_dir = self.contents_dir or "contents"
         subspaces_dir = self.subspaces_dir or ""
 
         layout = self.layout
+        layout.prop(self, "under", text="")
         layout.label(text="Folder Structure")
         box = layout.box()
         if subspaces_dir:
-            box.label(text=f"{str(root_dir)}")
+            box.label(text=f"{str(omoospace_dir)}")
             box.label(text=f"├─ {str(contents_dir)}")
             box.label(text=f"╰─ {str(subspaces_dir)}")
             box.label(text=f"       ╰─ {str(f'{subspace_name}.blend')}")
         else:
-            box.label(text=f"{str(root_dir)}")
+            box.label(text=f"{str(omoospace_dir)}")
             box.label(text=f"├─ {str(contents_dir)}")
             box.label(text=f"╰─ {str(f'{subspace_name}.blend')}")
 
         layout.separator()
-        layout.prop(self, "under")
-        layout.prop(self, "omoospace_name")
-        layout.prop(self, "subspace_name")
+        layout.prop(self, "dirname")
         layout.prop(self, "contents_dir")
         layout.prop(self, "subspaces_dir")
-        layout.prop(self, "readme")
+
+        layout.separator()
+        layout.prop(self, "subspace_name")
 
 
 class CopyToClipboard(bpy.types.Operator):
