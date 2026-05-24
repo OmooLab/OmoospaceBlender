@@ -15,6 +15,7 @@ class OMOOSPACE_InputPath(bpy.types.PropertyGroup):
     path: bpy.props.StringProperty()  # type: ignore
 
     category: bpy.props.StringProperty(default="Misc")  # type: ignore
+    category_key: bpy.props.StringProperty(default="misc")  # type: ignore
     folder: bpy.props.StringProperty(default="")  # type: ignore
     include_pathname: bpy.props.BoolProperty(default=False)  # type: ignore
     include_folder: bpy.props.BoolProperty(default=False)  # type: ignore
@@ -29,6 +30,7 @@ class OMOOSPACE_OutputPath(bpy.types.PropertyGroup):
     path: bpy.props.StringProperty()  # type: ignore
 
     category: bpy.props.StringProperty(default="Misc")  # type: ignore
+    category_key: bpy.props.StringProperty(default="misc")  # type: ignore
     name: bpy.props.StringProperty()  # type: ignore
     suffix: bpy.props.StringProperty()  # type: ignore
     in_folder: bpy.props.BoolProperty(default=False)  # type: ignore

@@ -2,6 +2,7 @@ import bpy
 from pathlib import Path
 
 from .operators import RevealPath
+from .preferences import CATEGORY_FOLDER_DEFAULTS
 from .utils import (
     bpath_to_opath,
     copy_to,
@@ -28,6 +29,32 @@ CATEGORY_ICON = {
     "audios": "FILE_SOUND",
     "geonodes": "NODETREE",
 }
+
+CATEGORY_PREF_MAP = {
+    "images": "category_images",
+    "volumes": "category_volumes",
+    "dynamics": "category_dynamics",
+    "libraries": "category_libraries",
+    "misc": "category_misc",
+    "renders": "category_renders",
+    "videos": "category_videos",
+    "audios": "category_audios",
+    "geonodes": "category_geonodes",
+}
+
+
+def get_category_folder(category_key: str) -> str:
+    defaults = CATEGORY_FOLDER_DEFAULTS
+    try:
+        prefs = bpy.context.preferences.addons[__package__].preferences
+        pref_name = CATEGORY_PREF_MAP.get(category_key, "")
+        if pref_name:
+            value = getattr(prefs, pref_name, "")
+            if value:
+                return value
+    except Exception:
+        pass
+    return defaults.get(category_key, category_key)
 
 
 def correct_input_path(
@@ -149,11 +176,14 @@ def collect_input_paths():
             continue
 
         parm = f"image/{image.name}"
+        category_key = "videos" if image.filepath.endswith(video_format) else "images"
+        category = get_category_folder(category_key)
         input_path_dict[parm] = {
             "label": image.name,
             "path": image.filepath,
             "users": image.users,
-            "category": "videos" if image.filepath.endswith(video_format) else "images",
+            "category": category,
+            "category_key": category_key,
             "is_sequence": is_sequence(image.filepath),
             "is_packed": bool(image.packed_file),
         }
@@ -163,11 +193,14 @@ def collect_input_paths():
             continue
 
         parm = f"sound/{sound.name}"
+        category_key = "videos" if sound.filepath.endswith(video_format) else "audios"
+        category = get_category_folder(category_key)
         input_path_dict[parm] = {
             "label": sound.name,
             "path": sound.filepath,
             "users": sound.users,
-            "category": "videos" if sound.filepath.endswith(video_format) else "audios",
+            "category": category,
+            "category_key": category_key,
             "is_sequence": False,
             "is_packed": bool(sound.packed_file),
         }
@@ -181,7 +214,8 @@ def collect_input_paths():
             "label": volume.name,
             "path": volume.filepath,
             "users": volume.users,
-            "category": "volumes",
+            "category": get_category_folder("volumes"),
+            "category_key": "volumes",
             "is_sequence": volume.is_sequence,
             "is_packed": bool(volume.packed_file),
         }
@@ -195,7 +229,8 @@ def collect_input_paths():
             "label": cache_file.name,
             "path": cache_file.filepath,
             "users": cache_file.users,
-            "category": "dynamics",
+            "category": get_category_folder("dynamics"),
+            "category_key": "dynamics",
             "is_sequence": is_sequence(cache_file.filepath),
             "is_packed": False,
         }
@@ -214,7 +249,8 @@ def collect_input_paths():
             "label": library.name,
             "path": library.filepath,
             "users": library.users,
-            "category": "libraries",
+            "category": get_category_folder("libraries"),
+            "category_key": "libraries",
             "is_sequence": False,
             "is_packed": bool(library.packed_file),
         }
@@ -225,14 +261,17 @@ def collect_input_paths():
         for strip in scene.sequence_editor.strips_all:
             parm = None
             category = None
+            category_key = None
             path = None
 
             if strip.type == "IMAGE":
-                category = "images"
+                category_key = "images"
+                category = get_category_folder("images")
                 path = strip.directory
                 parm = f"strip_image/{scene.name}/{strip.name}"
             elif strip.type == "MOVIE":
-                category = "videos"
+                category_key = "videos"
+                category = get_category_folder("videos")
                 path = strip.filepath
                 parm = f"strip_movie/{scene.name}/{strip.name}"
 
@@ -244,6 +283,7 @@ def collect_input_paths():
                 "path": path,
                 "users": 0,
                 "category": category,
+                "category_key": category_key,
                 "is_sequence": False,
                 "is_packed": False,
             }
@@ -264,7 +304,8 @@ def collect_output_paths():
         output_paths[parm] = {
             "label": f"{scene.name}",
             "path": scene.render.filepath,
-            "category": "renders",
+            "category": get_category_folder("renders"),
+            "category_key": "renders",
             "name": normalize_name(scene.name),
             "suffix": "####" if not_video else "",
             "in_folder": not_video,
@@ -279,7 +320,8 @@ def collect_output_paths():
                 output_paths[parm] = {
                     "label": f"{obj.name} {modifier.name}",
                     "path": modifier.bake_directory,
-                    "category": "geo-nodes",
+                    "category": get_category_folder("geonodes"),
+                    "category_key": "geonodes",
                     "name": normalize_name(modifier.name),
                     "suffix": "",
                     "in_folder": False,
@@ -409,7 +451,8 @@ class ManageInputPaths(bpy.types.Operator):
             input_path.label = item["label"]
             input_path.path = item["path"]
             input_path.category = item["category"]
-            input_path.icon = CATEGORY_ICON[item["category"]]
+            input_path.category_key = item["category_key"]
+            input_path.icon = CATEGORY_ICON[item["category_key"]]
 
             if item["is_sequence"]:
                 input_path.include_folder = True
@@ -593,7 +636,8 @@ class ManageOutputPaths(bpy.types.Operator):
             output_path.parm = parm
             output_path.path = item["path"]
             output_path.category = item["category"]
-            output_path.icon = CATEGORY_ICON[item["category"]]
+            output_path.category_key = item["category_key"]
+            output_path.icon = CATEGORY_ICON[item["category_key"]]
             output_path.name = item["name"]
             output_path.suffix = item["suffix"]
             output_path.in_folder = item["in_folder"]

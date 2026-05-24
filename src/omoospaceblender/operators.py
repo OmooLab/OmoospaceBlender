@@ -33,7 +33,9 @@ class CreateOmoospace(bpy.types.Operator):
         return {"RUNNING_MODAL"}
 
     def execute(self, context):
-        file_name = bpy.path.basename(bpy.data.filepath) or "Untitled"
+        file_name = (
+            bpy.path.basename(bpy.data.filepath).removesuffix(".blend") or "Untitled"
+        )
         dirname = self.dirname or file_name
 
         omoospace_dir = Opath(self.under, dirname)
@@ -62,7 +64,9 @@ class CreateOmoospace(bpy.types.Operator):
         return {"FINISHED"}
 
     def draw(self, context):
-        file_name = bpy.path.basename(bpy.data.filepath) or "Untitled"
+        file_name = (
+            bpy.path.basename(bpy.data.filepath).removesuffix(".blend") or "Untitled"
+        )
         dirname = self.dirname or file_name
 
         try:
