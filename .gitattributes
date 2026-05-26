@@ -1,7 +1,6 @@
 # Define macros (only works in top-level gitattributes files)
 [attr]lfs               filter=lfs diff=lfs merge=lfs -text
 
-
 # 3D models
 *.collada               lfs
 *.dae                   lfs
@@ -15,6 +14,7 @@
 *.ply                   lfs
 *.skp                   lfs
 *.stl                   lfs
+*.stp                   lfs
 *.usd                   lfs
 *.usda                  lfs
 *.usdc                  lfs
@@ -43,6 +43,7 @@
 *.mpg                   lfs
 *.ogv                   lfs
 *.wmv                   lfs
+*.mkv                   lfs
 
 # Images
 *.bmp                   lfs
@@ -85,9 +86,15 @@
 
 # Documents
 *.pdf                   lfs
+*.doc                   lfs
+*.xls                   lfs
+*.ppt                   lfs
+*.docx                  lfs
+*.xlsx                  lfs
+*.pptx                  lfs
 
 # Adobe
-*.psd                    lfs
+*.psd                   lfs
 *.ai                    lfs
 *.aep                   lfs
 *.prproj                lfs
@@ -118,3 +125,7 @@
 *.ome                   lfs
 *.map                   lfs
 *.mrc                   lfs
+
+# Others
+*.abr                   lfs
+*.tpl                   lfs
