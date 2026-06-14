@@ -1,6 +1,7 @@
 import bpy
 from pathlib import Path
 
+from . import default_configs
 from .utils import bpath_to_opath
 from omoospace import create_omoospace, normalize_name, copy_to_clipboard, Opath
 
@@ -134,4 +135,20 @@ class RevealPath(bpy.types.Operator):
         elif opath.is_dir():
             opath.reveal_in_explorer()
 
+        return {"FINISHED"}
+
+
+class LoadOmoospaceStartup(bpy.types.Operator):
+    bl_idname = "omoospace.load_startup"
+    bl_label = "Use Omoospace Startup"
+    bl_description = "Install the Omoospace startup file as Blender startup"
+    bl_options = {"UNDO"}
+
+    def execute(self, context):
+        success, message = default_configs.install_startup_file()
+        if not success:
+            self.report({"ERROR"}, message)
+            return {"CANCELLED"}
+
+        self.report({"INFO"}, message)
         return {"FINISHED"}

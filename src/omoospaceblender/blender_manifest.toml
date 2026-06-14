@@ -3,10 +3,10 @@ schema_version = "1.0.0"
 # Example of manifest file for a Blender extension
 # Change the values according to your extension
 id = "omoospace"
-version = "0.2.4"
+version = "0.2.5"
 name = "Omoospace"
-tagline = "Manage your project files in omoospace's way"
-maintainer = "MaNan <icrdr2010@outlook.com>"
+tagline = "Manage your blender projects in omoospace's way"
+maintainer = "Nan <icrdr2010@outlook.com>"
 # Supported types: "add-on", "theme"
 type = "add-on"
 
@@ -58,7 +58,7 @@ wheels = [
 ## For longer explanations use the documentation or detail page.
 #
 [permissions]
-files = "Manage your project files in omoospace's way"
+files = "Manage your blender files"
 
 # Optional: build settings.
 # https://docs.blender.org/manual/en/dev/advanced/extensions/command_line_arguments.html#command-line-args-extension-build

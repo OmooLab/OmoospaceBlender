@@ -1,7 +1,12 @@
 import bpy
 from .utils import get_omoospace, get_pathname
 from .manage_paths import ManageInputPaths, ManageOutputPaths
-from .operators import CreateOmoospace, RevealPath, CopyToClipboard
+from .operators import (
+    CopyToClipboard,
+    CreateOmoospace,
+    LoadOmoospaceStartup,
+    RevealPath,
+)
 
 
 class OmoospaceMenu(bpy.types.Menu):
@@ -62,11 +67,27 @@ def FILE_BROWSER(self, context):
     )
 
 
+def FILE_DEFAULTS(self, context):
+    layout = self.layout
+    layout.operator(LoadOmoospaceStartup.bl_idname)
+    layout.separator()
+
+
+def _has_file_defaults_menu():
+    return hasattr(bpy.types, "TOPBAR_MT_file_defaults")
+
+
 def add():
     bpy.types.TOPBAR_MT_editor_menus.prepend(TOPBAR)
     bpy.types.FILEBROWSER_PT_bookmarks_favorites.prepend(FILE_BROWSER)
+    if _has_file_defaults_menu():
+        bpy.types.TOPBAR_MT_file_defaults.prepend(FILE_DEFAULTS)
+    else:
+        print("Blender File Defaults menu not found.")
 
 
 def remove():
     bpy.types.TOPBAR_MT_editor_menus.remove(TOPBAR)
     bpy.types.FILEBROWSER_PT_bookmarks_favorites.remove(FILE_BROWSER)
+    if _has_file_defaults_menu():
+        bpy.types.TOPBAR_MT_file_defaults.remove(FILE_DEFAULTS)
