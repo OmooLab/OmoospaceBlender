@@ -21,4 +21,6 @@ def register():
 
 def unregister():
     menus.remove()
+    del bpy.types.WindowManager.old_path_list
+    del bpy.types.WindowManager.quick_dir_list
     auto_load.unregister()

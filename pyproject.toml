@@ -1,6 +1,6 @@
 [project]
 name = "omoospaceblender"
-version = "0.2.6"
+version = "0.2.7"
 description = "Manage your blender projects in omoospace's way"
 readme = "README.md"
 requires-python = ">=3.11"
